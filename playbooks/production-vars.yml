@@ -1,0 +1,11 @@
+---
+deployment_environment: "production"
+application_version: "2.5.1"
+enable_monitoring: true
+target_directory: "/opt/production-app"
+custom_message: "Production deployment initiated"
+
+# Production-specific settings
+database_pool_size: 50
+cache_enabled: true
+log_retention_days: 30

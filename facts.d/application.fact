@@ -1,0 +1,18 @@
+#!/bin/bash
+# Custom fact script for application information
+
+echo "{"
+echo "  \"version\": \"2.1.0\","
+echo "  \"environment\": \"development\","
+echo "  \"last_deployment\": \"$(date -Iseconds)\","
+echo "  \"services\": ["
+echo "    \"web\","
+echo "    \"api\","
+echo "    \"worker\""
+echo "  ],"
+echo "  \"configuration\": {"
+echo "    \"debug_enabled\": true,"
+echo "    \"log_level\": \"info\","
+echo "    \"max_workers\": 4"
+echo "  }"
+echo "}"

@@ -1,0 +1,16 @@
+---
+# Host-specific variables for localhost
+hostname: "lab-server"
+ip_address: "127.0.0.1"
+cpu_cores: 4
+memory_gb: 8
+
+# Override some group variables
+max_connections: 150
+log_level: "debug"
+
+# Host-specific applications
+installed_services:
+  - "ssh"
+  - "cron"
+  - "rsyslog"

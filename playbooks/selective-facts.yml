@@ -1,0 +1,61 @@
+---
+- name: Selective Fact Gathering Demonstration
+  hosts: localhost
+  connection: local
+  
+  # Disable automatic fact gathering
+  gather_facts: no
+  
+  tasks:
+    - name: Gather only network facts
+      setup:
+        filter: "ansible_default_ipv4,ansible_interfaces,ansible_all_ipv4_addresses"
+      register: network_facts
+    
+    - name: Display network facts only
+      debug:
+        msg: |
+          === Network Facts Only ===
+          Default IP: {{ ansible_default_ipv4.address | default('Not available') }}
+          All Interfaces: {{ ansible_interfaces | join(', ') }}
+          All IPv4 Addresses: {{ ansible_all_ipv4_addresses | join(', ') }}
+    
+    - name: Gather only hardware facts
+      setup:
+        filter: "ansible_processor*,ansible_memtotal_mb,ansible_memfree_mb"
+    
+    - name: Display hardware facts only
+      debug:
+        msg: |
+          === Hardware Facts Only ===
+          Processor Count: {{ ansible_processor_count }}
+          Processor Cores: {{ ansible_processor_cores }}
+          Total Memory: {{ ansible_memtotal_mb }}MB
+          Free Memory: {{ ansible_memfree_mb }}MB
+    
+    - name: Gather OS facts
+      setup:
+        filter: "ansible_distribution*,ansible_kernel,ansible_architecture"
+    
+    - name: Display OS facts only
+      debug:
+        msg: |
+          === Operating System Facts Only ===
+          Distribution: {{ ansible_distribution }}
+          Version: {{ ansible_distribution_version }}
+          Kernel: {{ ansible_kernel }}
+          Architecture: {{ ansible_architecture }}
+    
+    - name: Gather all facts for comparison
+      setup:
+      register: all_facts
+    
+    - name: Show fact gathering performance comparison
+      debug:
+        msg: |
+          === Fact Gathering Performance ===
+          This playbook demonstrated selective fact gathering.
+          In production environments, gathering only required facts
+          can significantly improve playbook performance.
+          
+          Total facts available: {{ ansible_facts | length }}

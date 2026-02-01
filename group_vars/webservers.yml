@@ -1,0 +1,16 @@
+---
+# Group variables for webservers
+web_server_port: 80
+web_server_name: "Apache"
+max_connections: 100
+document_root: "/var/www/html"
+
+# Environment specific settings
+environment_type: "production"
+log_level: "info"
+
+# Security settings
+enable_firewall: true
+allowed_ips:
+  - "192.168.1.0/24"
+  - "10.0.0.0/8"

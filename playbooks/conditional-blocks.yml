@@ -1,0 +1,153 @@
+---
+- name: Conditional Blocks and Error Handling
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  
+  vars:
+    deployment_mode: "production"
+    enable_monitoring: true
+    backup_required: true
+  
+  tasks:
+    - name: Production deployment block
+      block:
+        - name: Production pre-checks
+          debug:
+            msg: "Performing production environment pre-checks"
+        
+        - name: Validate system requirements for production
+          debug:
+            msg: "System meets production requirements"
+          when:
+            - ansible_memtotal_mb >= 4096
+            - ansible_processor_cores >= 2
+        
+        - name: Configure production settings
+          debug:
+            msg: "Applying production configuration"
+        
+        - name: Enable production monitoring
+          debug:
+            msg: "Enabling production monitoring"
+          when: enable_monitoring == true
+      
+      rescue:
+        - name: Production deployment failed
+          debug:
+            msg: "Production deployment encountered an error, falling back to safe mode"
+        
+        - name: Apply safe configuration
+          debug:
+            msg: "Applying safe fallback configuration"
+      
+      always:
+        - name: Log deployment attempt
+          debug:
+            msg: "Production deployment attempt completed at {{ ansible_date_time.iso8601 }}"
+      
+      when: deployment_mode == "production"
+    
+    - name: Development deployment block
+      block:
+        - name: Development environment setup
+          debug:
+            msg: "Setting up development environment"
+        
+        - name: Enable debug mode
+          debug:
+            msg: "Debug mode enabled for development"
+        
+        - name: Skip resource validation
+          debug:
+            msg: "Skipping resource validation in development mode"
+      
+      when: deployment_mode == "development"
+    
+    - name: Backup configuration block
+      block:
+        - name: Check backup requirements
+          debug:
+            msg: "Backup is required for this deployment"
+        
+        - name: Validate backup storage
+          debug:
+            msg: "Checking backup storage availability"
+        
+        - name: Create backup
+          debug:
+            msg: "Creating system backup"
+        
+        - name: Verify backup integrity
+          debug:
+            msg: "Backup created successfully"
+      
+      rescue:
+        - name: Backup failed
+          debug:
+            msg: "WARNING: Backup creation failed, proceeding without backup"
+      
+      when: backup_required == true
+    
+    - name: System-specific configuration block
+      block:
+        - name: Ubuntu-specific tasks
+          debug:
+            msg: "Applying Ubuntu-specific configuration"
+          when: ansible_distribution == "Ubuntu"
+        
+        - name: Configure APT repositories
+          debug:
+            msg: "Configuring APT repositories"
+          when: ansible_pkg_mgr == "apt"
+        
+        - name: Install Ubuntu packages
+          debug:
+            msg: "Installing Ubuntu-specific packages"
+          when: ansible_distribution == "Ubuntu"
+      
+      when: ansible_os_family == "Debian"
+    
+    - name: Conditional service management
+      block:
+        - name: Check if systemd is available
+          debug:
+            msg: "Using systemd for service management"
+        
+        - name: Configure systemd services
+          debug:
+            msg: "Configuring services with systemd"
+        
+        - name: Enable auto-start services
+          debug:
+            msg: "Enabling auto-start for critical services"
+      
+      when: ansible_service_mgr == "systemd"
+    
+    - name: Final validation block
+      block:
+        - name: Validate deployment
+          debug:
+            msg: "Running final deployment validation"
+        
+        - name: Check service status
+          debug:
+            msg: "All services are running correctly"
+        
+        - name: Deployment successful
+          debug:
+            msg: |
+              === Deployment Summary ===
+              Mode: {{ deployment_mode }}
+              Target: {{ ansible_hostname }}
+              OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+              Completed: {{ ansible_date_time.iso8601 }}
+      
+      always:
+        - name: Cleanup temporary files
+          debug:
+            msg: "Cleaning up temporary deployment files"
+        
+        - name: Send deployment notification
+          debug:
+            msg: "Deployment notification sent to monitoring system"

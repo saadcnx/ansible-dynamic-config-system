@@ -1,0 +1,57 @@
+---
+- name: Variables Demonstration Playbook
+  hosts: localhost
+  connection: local
+  
+  # Play-level variables
+  vars:
+    app_name: "MyWebApp"
+    app_version: "2.1.0"
+    app_port: 8080
+    app_environment: "development"
+    
+    # List variables
+    required_packages:
+      - nginx
+      - python3
+      - git
+      - curl
+    
+    # Dictionary variables
+    database_config:
+      host: "localhost"
+      port: 5432
+      name: "myapp_db"
+      user: "dbuser"
+    
+    # Boolean variables
+    enable_ssl: true
+    debug_mode: false
+  
+  tasks:
+    - name: Display application information
+      debug:
+        msg: |
+          Application: {{ app_name }}
+          Version: {{ app_version }}
+          Port: {{ app_port }}
+          Environment: {{ app_environment }}
+    
+    - name: Show required packages
+      debug:
+        msg: "Required package: {{ item }}"
+      loop: "{{ required_packages }}"
+    
+    - name: Display database configuration
+      debug:
+        msg: |
+          Database Host: {{ database_config.host }}
+          Database Port: {{ database_config.port }}
+          Database Name: {{ database_config.name }}
+          Database User: {{ database_config.user }}
+    
+    - name: Show boolean variables
+      debug:
+        msg: |
+          SSL Enabled: {{ enable_ssl }}
+          Debug Mode: {{ debug_mode }}

@@ -1,0 +1,38 @@
+---
+- name: Variable Precedence Demonstration
+  hosts: webservers
+  connection: local
+  
+  # Play-level variables (lower precedence)
+  vars:
+    log_level: "warning"
+    custom_setting: "play-level-value"
+  
+  tasks:
+    - name: Display variable sources and precedence
+      debug:
+        msg: |
+          === Variable Precedence Demo ===
+          Web Server Port: {{ web_server_port | default('not defined') }}
+          Web Server Name: {{ web_server_name | default('not defined') }}
+          Max Connections: {{ max_connections | default('not defined') }}
+          Log Level: {{ log_level | default('not defined') }}
+          Custom Setting: {{ custom_setting | default('not defined') }}
+          
+          === Host-specific Information ===
+          Hostname: {{ hostname | default('not defined') }}
+          IP Address: {{ ip_address | default('not defined') }}
+          CPU Cores: {{ cpu_cores | default('not defined') }}
+          Memory: {{ memory_gb | default('not defined') }}GB
+    
+    - name: Show installed services
+      debug:
+        msg: "Service: {{ item }}"
+      loop: "{{ installed_services | default([]) }}"
+      when: installed_services is defined
+    
+    - name: Display security settings
+      debug:
+        msg: |
+          Firewall Enabled: {{ enable_firewall | default('not defined') }}
+          SSL Enabled: {{ ssl_enabled | default('not defined') }}

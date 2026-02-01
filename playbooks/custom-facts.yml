@@ -1,0 +1,52 @@
+---
+- name: Custom Facts Demonstration
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  
+  tasks:
+    - name: Display standard facts summary
+      debug:
+        msg: |
+          === Standard System Facts ===
+          OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          Kernel: {{ ansible_kernel }}
+          Python Version: {{ ansible_python_version }}
+          Uptime: {{ ansible_uptime_seconds | int // 3600 }} hours
+    
+    - name: Display custom application facts
+      debug:
+        msg: |
+          === Custom Application Facts ===
+          App Version: {{ ansible_local.application.version }}
+          Environment: {{ ansible_local.application.environment }}
+          Last Deployment: {{ ansible_local.application.last_deployment }}
+          Debug Enabled: {{ ansible_local.application.configuration.debug_enabled }}
+          Log Level: {{ ansible_local.application.configuration.log_level }}
+          Max Workers: {{ ansible_local.application.configuration.max_workers }}
+      when: ansible_local.application is defined
+    
+    - name: Display custom application services
+      debug:
+        msg: "Service: {{ item }}"
+      loop: "{{ ansible_local.application.services }}"
+      when: ansible_local.application.services is defined
+    
+    - name: Display custom system info facts
+      debug:
+        msg: |
+          === Custom System Info Facts ===
+          Environment: {{ ansible_local.system_info.general.environment }}
+          Datacenter: {{ ansible_local.system_info.general.datacenter }}
+          Team: {{ ansible_local.system_info.general.team }}
+          
+          === Monitoring Configuration ===
+          Monitoring Enabled: {{ ansible_local.system_info.monitoring.enabled }}
+          Agent Version: {{ ansible_local.system_info.monitoring.agent_version }}
+          Metrics Endpoint: {{ ansible_local.system_info.monitoring.metrics_endpoint }}
+          
+          === Backup Configuration ===
+          Backup Enabled: {{ ansible_local.system_info.backup.enabled }}
+          Schedule: {{ ansible_local.system_info.backup.schedule }}
+          Retention: {{ ansible_local.system_info.backup.retention_days }} days
+      when: ansible_local.system_info is defined

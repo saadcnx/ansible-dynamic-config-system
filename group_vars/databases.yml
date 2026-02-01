@@ -1,0 +1,14 @@
+---
+# Group variables for databases
+db_engine: "postgresql"
+db_port: 5432
+max_connections: 200
+backup_enabled: true
+
+# Performance settings
+shared_buffers: "256MB"
+effective_cache_size: "1GB"
+
+# Security settings
+ssl_enabled: true
+authentication_method: "md5"

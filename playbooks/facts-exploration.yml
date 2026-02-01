@@ -1,0 +1,52 @@
+---
+- name: System Facts Exploration
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  
+  tasks:
+    - name: Display basic system information
+      debug:
+        msg: |
+          === Basic System Information ===
+          Hostname: {{ ansible_hostname }}
+          FQDN: {{ ansible_fqdn }}
+          Operating System: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          Kernel Version: {{ ansible_kernel }}
+          Architecture: {{ ansible_architecture }}
+          
+          === Hardware Information ===
+          CPU Cores: {{ ansible_processor_cores }}
+          CPU Count: {{ ansible_processor_count }}
+          Total Memory: {{ ansible_memtotal_mb }}MB
+          Available Memory: {{ ansible_memfree_mb }}MB
+    
+    - name: Display network information
+      debug:
+        msg: |
+          === Network Information ===
+          Default IPv4 Address: {{ ansible_default_ipv4.address | default('Not available') }}
+          Default Gateway: {{ ansible_default_ipv4.gateway | default('Not available') }}
+          DNS Servers: {{ ansible_dns.nameservers | join(', ') if ansible_dns.nameservers is defined else 'Not available' }}
+    
+    - name: Show all network interfaces
+      debug:
+        msg: "Interface {{ item }}: {{ hostvars[inventory_hostname]['ansible_' + item].get('ipv4', {}).get('address', 'No IP') }}"
+      loop: "{{ ansible_interfaces }}"
+      when: 
+        - ansible_interfaces is defined
+        - hostvars[inventory_hostname]['ansible_' + item] is defined
+        - hostvars[inventory_hostname]['ansible_' + item].get('ipv4') is defined
+    
+    - name: Display storage information
+      debug:
+        msg: |
+          === Storage Information ===
+          Device: {{ item.device }}
+          Mount Point: {{ item.mount }}
+          Filesystem: {{ item.fstype }}
+          Size: {{ item.size_total | human_readable }}
+          Available: {{ item.size_available | human_readable }}
+          Used: {{ ((item.size_total - item.size_available) / item.size_total * 100) | round(1) }}%
+      loop: "{{ ansible_mounts }}"
+      when: ansible_mounts is defined

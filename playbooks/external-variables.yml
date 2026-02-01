@@ -1,0 +1,40 @@
+---
+- name: External Variables Demonstration
+  hosts: localhost
+  connection: local
+  
+  # Default values for variables
+  vars:
+    deployment_environment: "development"
+    application_version: "1.0.0"
+    enable_monitoring: false
+  
+  tasks:
+    - name: Display deployment information
+      debug:
+        msg: |
+          === Deployment Configuration ===
+          Environment: {{ deployment_environment }}
+          Application Version: {{ application_version }}
+          Monitoring Enabled: {{ enable_monitoring }}
+          
+          === Additional Variables ===
+          Custom Message: {{ custom_message | default('No custom message here :)') }}
+          Target Directory: {{ target_directory | default('/opt/app') }}
+    
+    - name: Create target directory if specified
+      file:
+        path: "{{ target_directory | default('/tmp/default-app') }}"
+        state: directory
+        mode: '0755'
+      become: yes
+    
+    - name: Show conditional behavior based on environment
+      debug:
+        msg: "Running in {{ deployment_environment }} mode with enhanced logging"
+      when: deployment_environment == "development"
+    
+    - name: Production environment message
+      debug:
+        msg: "Production deployment detected - using optimized settings"
+      when: deployment_environment == "production"

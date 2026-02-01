@@ -1,0 +1,116 @@
+---
+- name: Advanced Conditional Statements
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  
+  vars:
+    required_packages:
+      - name: "python3"
+        min_version: "3.6"
+        critical: true
+      - name: "git"
+        min_version: "2.0"
+        critical: true
+      - name: "docker"
+        min_version: "20.0"
+        critical: false
+    
+    service_ports:
+      - port: 22
+        service: "ssh"
+        required: true
+      - port: 80
+        service: "http"
+        required: true
+      - port: 443
+        service: "https"
+        required: false
+      - port: 3306
+        service: "mysql"
+        required: false
+  
+  tasks:
+    - name: Check if running as root
+      debug:
+        msg: "WARNING: Running as root user"
+      when: ansible_user_id == "root"
+    
+    - name: Check if running as regular user
+      debug:
+        msg: "Running as regular user: {{ ansible_user_id }}"
+      when: ansible_user_id != "root"
+    
+    - name: Check disk space on root filesystem
+      debug:
+        msg: |
+          Root filesystem status:
+          Total: {{ item.size_total | human_readable }}
+          Available: {{ item.size_available | human_readable }}
+          Used: {{ ((item.size_total - item.size_available) / item.size_total * 100) | round(1) }}%
+      loop: "{{ ansible_mounts }}"
+      when: 
+        - item.mount == "/"
+        - item.size_total is defined
+    
+    - name: Warning for low disk space
+      debug:
+        msg: "WARNING: Low disk space on {{ item.mount }}"
+      loop: "{{ ansible_mounts }}"
+      when:
+        - item.size_available is defined
+        - item.size_total is defined
+        - (item.size_available / item.size_total * 100) < 20
+    
+    - name: Check for required packages (simulation)
+      debug:
+        msg: "Checking critical package: {{ item.name }} (min version: {{ item.min_version }})"
+      loop: "{{ required_packages }}"
+      when: item.critical == true
+    
+    - name: Check for optional packages (simulation)
+      debug:
+        msg: "Checking optional package: {{ item.name }}"
+      loop: "{{ required_packages }}"
+      when: item.critical == false
+    
+    - name: Network interface validation
+      debug:
+        msg: "Active network interface found: {{ item }}"
+      loop: "{{ ansible_interfaces }}"
+      when:
+        - item != "lo"
+        - hostvars[inventory_hostname]['ansible_' + item] is defined
+        - hostvars[inventory_hostname]['ansible_' + item].get('active', false) == true
+    
+    - name: Check Python version compatibility
+      debug:
+        msg: |
+          Python version check:
+          Current: {{ ansible_python_version }}
+          Status: {{ 'Compatible' if ansible_python_version is version('3.6', '>=') else 'Incompatible' }}
+      when: ansible_python_version is defined
+    
+    - name: Conditional task based on system load
+      debug:
+        msg: "System load is acceptable"
+      when: 
+        - ansible_loadavg is defined
+        - ansible_loadavg['1m'] < ansible_processor_count * 2
+    
+    - name: Check for systemd
+      debug:
+        msg: "Systemd is available on this system"
+      when: ansible_service_mgr == "systemd"
+    
+    - name: Memory usage analysis
+      debug:
+        msg: |
+          Memory Analysis:
+          Total: {{ ansible_memtotal_mb }}MB
+          Free: {{ ansible_memfree_mb }}MB
+          Usage: {{ ((ansible_memtotal_mb - ansible_memfree_mb) / ansible_memtotal_mb * 100) | round(1) }}%
+          Status: {{ 'High Usage' if ((ansible_memtotal_mb - ansible_memfree_mb) / ansible_memtotal_mb * 100) > 80 else 'Normal' }}
+      when:
+        - ansible_memtotal_mb is defined
+        - ansible_memfree_mb is defined

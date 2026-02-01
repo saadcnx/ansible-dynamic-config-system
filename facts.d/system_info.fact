@@ -1,0 +1,14 @@
+[general]
+environment=production
+datacenter=us-east-1
+team=devops
+
+[monitoring]
+enabled=true
+agent_version=3.2.1
+metrics_endpoint=https://metrics.example.com
+
+[backup]
+enabled=true
+schedule=daily
+retention_days=30
